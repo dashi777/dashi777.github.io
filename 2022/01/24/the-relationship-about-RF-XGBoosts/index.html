@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Dash"><meta name="copyright" content="Dash"><meta name="generator" content="Hexo 5.4.0"><meta name="theme" content="hexo-theme-yun"><title>浅谈数据分析--从决策树谈到随机森林与XGBoost | Dash的C0mm3nt</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/star-markdown-css@0.1.25/dist/yun/yun-markdown.min.css"><script src="//at.alicdn.com/t/font_1140697_dxory92pb0h.js" async></script><script src="https://cdn.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".post-content img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+    const Yun = window.Yun || {};
+    window.CONFIG = {"hostname":"dashi777.github.io","root":"/","title":["Dash 的","C0mm3nt","and","叨逼叨"],"version":"1.7.0","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}.","hits":"${hits} results found","hits_time":"${hits} results found in ${time} ms"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"data/sentences.json"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/utils.js"></script><script src="/js/hexo-theme-yun.js"></script><meta name="description" content="引言我们今天来谈谈机器学习中使用次数比较多的算法模型–随机森林，还有机器学习中的大杀器–XGBoost，当然还有与XGBoost相关的梯度提升决策树（GBDT），这些算法模型都是基于决策树的整合和优化，因此我们从决策树算法说起，聊聊这几个机器学习绕不开的算法模型。 注意： 建模常有分类、聚类和回归的分类算法，随机森林和XGBoost都适用于分类和回归，因分类相对容易理解，因此本文以分类使用来讲解这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈数据分析--从决策树谈到随机森林与XGBoost">
+<meta property="og:url" content="https://dashi777.github.io/2022/01/24/the-relationship-about-RF-XGBoosts/index.html">
+<meta property="og:site_name" content="Dash的C0mm3nt">
+<meta property="og:description" content="引言我们今天来谈谈机器学习中使用次数比较多的算法模型–随机森林，还有机器学习中的大杀器–XGBoost，当然还有与XGBoost相关的梯度提升决策树（GBDT），这些算法模型都是基于决策树的整合和优化，因此我们从决策树算法说起，聊聊这几个机器学习绕不开的算法模型。 注意： 建模常有分类、聚类和回归的分类算法，随机森林和XGBoost都适用于分类和回归，因分类相对容易理解，因此本文以分类使用来讲解这">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220121152140703.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220121164703326.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/70.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/format,png-20220124152738991.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/format,png-20220124153552561.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ZfSlVMWV92,size_16,color_FFFFFF,t_70.png">
+<meta property="article:published_time" content="2022-01-24T08:21:08.000Z">
+<meta property="article:modified_time" content="2022-01-24T08:38:20.337Z">
+<meta property="article:author" content="Dash">
+<meta property="article:tag" content="-数据分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220121152140703.png"><script src="/js/ui/mode.js"></script></head><body><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="Table of Contents"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-list-ordered"></use></svg></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="Overview"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-passport-line"></use></svg></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="Dash"><img width="96" loading="lazy" src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/67204822_1232942243533749_1151443351383890340_n.jpeg" alt="Dash"></a><div class="site-author-name"><a href="/about/">Dash</a></div><span class="site-name">Dash的C0mm3nt</span><sub class="site-subtitle">左拥右抱</sub><div class="site-desciption"></div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="Home"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-home-4-line"></use></svg></span></a><div class="site-state-item"><a href="/archives/" title="Archives"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-archive-line"></use></svg></span><span class="site-state-item-count">9</span></a></div><div class="site-state-item"><a href="/categories/" title="Categories"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-2-line"></use></svg></span><span class="site-state-item-count">3</span></a></div><div class="site-state-item"><a href="/tags/" title="Tags"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="site-state-item-count">11</span></a></div><a class="site-state-item hty-icon-button" href="https://dashi777.github.io/" title="github"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-open-arm-line"></use></svg></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" href="mailto:dashi777@foxmail.com" title="E-Mail" target="_blank" style="color:#8E71C1"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-mail-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://github.com/dashi777" title="GitHub" target="_blank" style="color:#181717"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-github-line"></use></svg></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-genderless-line"></use></svg></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-contrast-2-line"></use></svg></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">2.</span> <span class="toc-text">决策树</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-number">2.1.</span> <span class="toc-text">什么是决策树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ID3%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">ID3算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E7%86%B5"><span class="toc-number">2.2.1.</span> <span class="toc-text">信息熵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A"><span class="toc-number">2.2.2.</span> <span class="toc-text">信息增益</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#C4-5-%E7%AE%97%E6%B3%95"><span class="toc-number">2.3.</span> <span class="toc-text">C4.5 算法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97"><span class="toc-number">3.</span> <span class="toc-text">随机森林</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Bagging"><span class="toc-number">3.1.</span> <span class="toc-text">Bagging</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97-1"><span class="toc-number">3.2.</span> <span class="toc-text">随机森林</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E6%A3%AE%E6%9E%97%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9%EF%BC%9A"><span class="toc-number">3.3.</span> <span class="toc-text">随机森林的优缺点：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#GDBT"><span class="toc-number">4.</span> <span class="toc-text">GDBT</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Boosting"><span class="toc-number">4.1.</span> <span class="toc-text">Boosting</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDBT-1"><span class="toc-number">4.2.</span> <span class="toc-text">GDBT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDBT%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">4.3.</span> <span class="toc-text">GDBT的优缺点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9"><span class="toc-number">4.3.1.</span> <span class="toc-text">优点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9"><span class="toc-number">4.3.2.</span> <span class="toc-text">缺点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#XGBoost"><span class="toc-number">5.</span> <span class="toc-text">XGBoost</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E5%87%BD%E6%95%B0"><span class="toc-number">5.1.</span> <span class="toc-text">目标函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B"><span class="toc-number">5.2.</span> <span class="toc-text">算法流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">6.</span> <span class="toc-text">参考文献</span></a></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article"><link itemprop="mainEntityOfPage" href="https://dashi777.github.io/2022/01/24/the-relationship-about-RF-XGBoosts/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Dash"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Dash的C0mm3nt"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">浅谈数据分析--从决策树谈到随机森林与XGBoost</h1><div class="post-meta"><div class="post-time" style="display:inline-block"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-line"></use></svg></span> <time title="Created: 2022-01-24 16:21:08" itemprop="dateCreated datePublished" datetime="2022-01-24T16:21:08+08:00">2022-01-24</time></div><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-line"></use></svg></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/2022%E5%B9%B4/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">-2022年</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">-数据分析</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body" style="--smc-primary:#0078E7;"><h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>我们今天来谈谈机器学习中使用次数比较多的算法模型–随机森林，还有机器学习中的大杀器–XGBoost，当然还有与XGBoost相关的梯度提升决策树（GBDT），这些算法模型都是基于决策树的整合和优化，因此我们从决策树算法说起，聊聊这几个机器学习绕不开的算法模型。</p>
+<p><strong>注意：</strong> 建模常有分类、聚类和回归的分类算法，随机森林和XGBoost都适用于分类和回归，因分类相对容易理解，因此本文以分类使用来讲解这些算法。</p>
+<h1 id="决策树"><a href="#决策树" class="headerlink" title="决策树"></a>决策树</h1><h2 id="什么是决策树"><a href="#什么是决策树" class="headerlink" title="什么是决策树"></a>什么是决策树</h2><p>决策树就是基于策略抉择建立的树。</p>
+<blockquote>
+<p>机器学习中，决策树是一个预测模型；他代表的是对象属性与对象值之间的一种映射关系。树中每个节点表示某个对象，而每个分叉路径则代表的某个可能的属性值，而每个叶结点则对应从根节点到该叶节点所经历的路径所表示的对象的值。决策树仅有单一输出，若欲有复数输出，可以建立独立的决策树以处理不同输出。</p>
+</blockquote>
+<p>用简单例子来说明一下：</p>
+<p>当你想玩游戏的时候，我们会根据根据游戏的种类进行决策：</p>
+<ol>
+<li>是否想玩FPS游戏</li>
+<li>是的话，就玩COD，不是的话是否想玩RPG</li>
+<li>是的话，玩战神4，不是的话就玩王者荣耀</li>
+</ol>
+<p>这就是一个简单的决策树，我们通过不同的逻辑，进行决策或者归类。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220121152140703.png" alt="image-20220121152140703" loading="lazy"></p>
+<p>那么，我们将决策树应用在分类算法上的话，我们怎么确定我们的分类是有效的呢，下面根据不同算法逻辑介绍不同的决策树算法</p>
+<h2 id="ID3算法"><a href="#ID3算法" class="headerlink" title="ID3算法"></a>ID3算法</h2><blockquote>
+<p>ID3算法（Iterative Dichotomiser 3 迭代二叉树3代）是一个由Ross Quinlan发明的用于决策树的算法。这个算法便是建立在上述所介绍的奥卡姆剃刀的基础上：越是小型的决策树越优于大的决策树（ be simple简单理论）。尽管如此，该算法也不是总是生成最小的树形结构，而是一个启发式算法。</p>
+</blockquote>
+<h3 id="信息熵"><a href="#信息熵" class="headerlink" title="信息熵"></a>信息熵</h3><p>简单的讲，我们希望数据根据特征划分后的“纯度”越高越好，这个“纯度”的意思就是我的集合里面包含同一类的属性数据的比例。这个概念我们可以引入信息熵来描述：</p>
+<p>信息熵的计算公式为：$ Entropy(S) \equiv -p\sum_{k=1}^{|y|}p_klog_2p_k  $，那么如果一个包含正反样例集合S的信息熵可以表示为：$ Entropy(S) \equiv -p_+ log_2p_+ - (-p_- log_2p_-)$</p>
+<p>上述公式中，p+代表正样例，比如在本文开头第例子中p+则意味着想玩FPS，而p-则代表反样例，不玩FPS(在有关熵的所有计算中我们定义0log0为0)。</p>
+<p>举例来说，假设S是一个关于布尔概念的有14个样例的集合，它包括9个正例和5个反例（我们采用记号[9+，5-]来概括这样的数据样例），那么S相对于这个布尔样例的熵为：</p>
+<p>$ Entropy（[9+，5-]）=-（9/14）log2（9/14）-（5/14）log2（5/14）=0.940 $</p>
+<p>根据上述这个公式，我们可以得到：S的所有成员属于同一类，Entropy(S)=0； S的正反样例数量相等，Entropy(S)=1；S的正反样例数量不等，熵介于0，1之间，如下图所示</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220121164703326.png" alt="image-20220121164703326" loading="lazy"></p>
+<h3 id="信息增益"><a href="#信息增益" class="headerlink" title="信息增益"></a>信息增益</h3><p>已经有了熵作为衡量训练样例集合纯度的标准，现在可以定义属性分类训练数据的效力的度量标准。这个标准被称为“信息增益（information gain）”。简单的说，一个属性的信息增益就是由于使用这个属性分割样例而导致的期望熵降低(或者说，样本按照某属性划分时造成熵减少的期望)。更精确地讲，一个属性A相对样例集合S的信息增益Gain(S,A)被定义为：<br>$ Gain(S,A) = Entropy(S) - \sum \frac{|S_v|}{S}Entropy(S_v) $</p>
+<p> 其中 Values(A)是属性A所有可能值的集合，是S中属性A的值为v的子集。</p>
+<p>我们根据信息增益来量化我们决策树分裂的效果，从而达到最优的划分，这就是ID3决策树的核心。</p>
+<h2 id="C4-5-算法"><a href="#C4-5-算法" class="headerlink" title="C4.5 算法"></a>C4.5 算法</h2><p>C4.5算法其实是对ID3算法的一个提升，算法相对于ID3进行了改进：</p>
+<ol>
+<li>用信息增益率来选择属性。ID3选择属性用的是子树的信息增益，这里可以用很多方法来定义信息，ID3使用的是熵(entropy，熵是一种不纯度度量准则),也就是熵的变化值，而C4.5用的是信息增益率。对，区别就在于一个是信息增益，一个是信息增益率。</li>
+<li>在树构造过程中进行剪枝，在构造决策树的时候，那些挂着几个元素的节点，不考虑最好，不然容易导致overfitting。</li>
+<li>对非离散数据也能处理。</li>
+<li>能够对不完整数据进行处理</li>
+</ol>
+<p>简单介绍了决策树算法，我们进入正题：随机森林和GDBT</p>
+<h1 id="随机森林"><a href="#随机森林" class="headerlink" title="随机森林"></a>随机森林</h1><h2 id="Bagging"><a href="#Bagging" class="headerlink" title="Bagging"></a>Bagging</h2><p>Bagging是随机森林的核心思想，思想就是从总体样本当中随机取一部分样本进行训练，通过多次这样的结果，进行投票获取平均值作为结果输出，这就极大可能的避免了不好的样本数据，从而提高准确度。</p>
+<h2 id="随机森林-1"><a href="#随机森林-1" class="headerlink" title="随机森林"></a>随机森林</h2><p>随机森林就是根据Bagging的思想的决策树优化版，通过多次取样来降低样本噪声，一棵树的生成肯定还是不如多棵树，因此就有了随机森林，解决决策树泛化能力弱的特点。</p>
+<p>同一批数据，用同样的算法只能产生一棵树，这时Bagging策略可以帮助我们产生不同的数据集。在所有样本上，对这n个样本建立分类器（ID3\C4.5\CART\SVM\LOGISTIC），重复以上两步m次，获得m个分类器，最后根据这m个分类器的投票结果，决定数据属于哪一类。</p>
+<p><strong>每棵树的按照如下规则生成：</strong></p>
+<ol>
+<li>如果训练集大小为N，对于每棵树而言，<strong>随机</strong>且有放回地从训练集中的抽取N个训练样本，作为该树的训练集；</li>
+<li>如果每个样本的特征维度为M，指定一个常数m&lt;&lt;M，<strong>随机</strong>地从M个特征中选取m个特征子集，每次树进行分裂时，从这m个特征中选择最优的；</li>
+<li>每棵树都尽最大程度的生长，并且没有剪枝过程。</li>
+</ol>
+<h2 id="随机森林的优缺点："><a href="#随机森林的优缺点：" class="headerlink" title="随机森林的优缺点："></a>随机森林的优缺点：</h2><p><strong>优点：</strong></p>
+<ul>
+<li>在当前的很多数据集上，相对其他算法有着很大的优势，表现良好。</li>
+<li>它能够处理很高维度（feature很多）的数据，并且不用做特征选择(因为特征子集是随机选择的)。</li>
+<li>在训练完后，它能够给出哪些feature比较重要。</li>
+<li>训练速度快，容易做成并行化方法(训练时树与树之间是相互独立的)。</li>
+<li>在训练过程中，能够检测到feature间的互相影响。</li>
+<li>对于不平衡的数据集来说，它可以平衡误差。</li>
+<li>如果有很大一部分的特征遗失，仍可以维持准确度。</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li>随机森林已经被证明在某些<strong>噪音较大</strong>的分类或回归问题上会过拟合。</li>
+<li>对于有不同取值的属性的数据，取值划分较多的属性会对随机森林产生更大的影响，所以随机森林在这种数据上产出的属性权值是不可信的。</li>
+</ul>
+<h1 id="GDBT"><a href="#GDBT" class="headerlink" title="GDBT"></a>GDBT</h1><p>GBDT(Gradient Boosting Decision Tree)，全名叫梯度提升决策树，使用的是<strong>Boosting</strong>的思想。</p>
+<p><em>聪明的你们其实已经发现了，随机森林和GDBT其实都是基于决策树算法的提升，随机森林是利用并行的思想，通过多次抽样生成更多的数来进行决策，而GDBT则是利用串行的思想，通过多个简单决策树进行叠加，最终获得决策。</em></p>
+<h2 id="Boosting"><a href="#Boosting" class="headerlink" title="Boosting"></a>Boosting</h2><p>Boosting方法训练基分类器时采用串行的方式，各个基分类器之间有依赖。它的基本思路是将基分类器层层叠加，每一层在训练的时候，对前一层基分类器分错的样本，给予更高的权重。测试时，根据各层分类器的结果的加权得到最终结果。</p>
+<h2 id="GDBT-1"><a href="#GDBT-1" class="headerlink" title="GDBT"></a>GDBT</h2><p>GBDT的原理很简单，就是所有弱分类器的结果相加等于预测值，然后下一个弱分类器去拟合误差函数对预测值的残差(这个残差就是预测值与真实值之间的误差)。当然了，它里面的弱分类器的表现形式就是各棵树。</p>
+<p>举一个非常简单的例子，比如我今年30岁了，但计算机或者模型GBDT并不知道我今年多少岁，那GBDT咋办呢？</p>
+<ul>
+<li>它会在第一个弱分类器（或第一棵树中）随便用一个年龄比如20岁来拟合，然后发现误差有10岁；</li>
+<li>接下来在第二棵树中，用6岁去拟合剩下的损失，发现差距还有4岁；</li>
+<li>接着在第三棵树中用3岁拟合剩下的差距，发现差距只有1岁了；</li>
+<li>最后在第四课树中用1岁拟合剩下的残差，完美。</li>
+<li>最终，四棵树的结论加起来，就是真实年龄30岁（实际工程中，gbdt是计算负梯度，用负梯度近似残差）。</li>
+</ul>
+<h2 id="GDBT的优缺点"><a href="#GDBT的优缺点" class="headerlink" title="GDBT的优缺点"></a>GDBT的优缺点</h2><h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><ol>
+<li>预测阶段的计算速度快，树与树之间可并行化计算。</li>
+<li>在分布稠密的数据集上，泛化能力和表达能力都很好，这使得GBDT在Kaggle的众多竞赛中，经常名列榜首。</li>
+<li>采用决策树作为弱分类器使得GBDT模型具有较好的解释性和鲁棒性，能够自动发现特征间的高阶关系。</li>
+</ol>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>GBDT在高维稀疏的数据集上，表现不如支持向量机或者神经网络。</li>
+<li>GBDT在处理文本分类特征问题上，相对其他模型的优势不如它在处理数值特征时明显。</li>
+<li>训练过程需要串行训练，只能在决策树内部采用一些局部并行的手段提高训练速度。</li>
+</ol>
+<h1 id="XGBoost"><a href="#XGBoost" class="headerlink" title="XGBoost"></a>XGBoost</h1><p><em>本节的示意图基本引用自xgboost原作者陈天奇的讲义PPT中</em></p>
+<p>XGBoost是boosting算法的其中一种。Boosting算法的核心是使用多个弱分类器集成为一个强的分类器，XGBoost是GDBT的算法的提升，使用了二阶泰勒展开和引入惩罚函数来防止过拟合，实际使用中XGBoost算法因为其优秀的性能因此被称为神器。</p>
+<p>下面简单介绍一下XGBoost相对GDBT的提升：</p>
+<p>举个例子，我们要预测一家人对电子游戏的喜好程度，考虑到年轻和年老相比，年轻更可能喜欢电子游戏，以及男性和女性相比，男性更喜欢电子游戏，故先根据年龄大小区分小孩和大人，然后再通过性别区分开是男是女，逐一给各人在电子游戏喜好程度上打分，如下图所示。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/70.png" alt="img" loading="lazy"></p>
+<p>就这样，训练出了2棵树tree1和tree2，类似之前gbdt的原理，两棵树的结论累加起来便是最终的结论，所以小孩的预测分数就是两棵树中小孩所落到的结点的分数相加：2 + 0.9 = 2.9。爷爷的预测分数同理：-1 + （-0.9）= -1.9。具体如下图所示</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/format,png-20220124152738991.png" alt="img" loading="lazy"></p>
+<p>这其实就是上面GBDT的核心思想：通过多次的弱分类树结合为一个强的树结构。而XGBoost与GDBT不同的是目标函数</p>
+<h2 id="目标函数"><a href="#目标函数" class="headerlink" title="目标函数"></a>目标函数</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/format,png-20220124153552561.png" alt="img" loading="lazy"></p>
+<p>其中</p>
+<ul>
+<li>红色箭头所指向的L 即为损失函数（比如平方损失函数：$ l(y_i,y^i)=(y_i-y^i)$，或logistic损失函数：$ l(y_i,y^i) = y_iln(1+e^{-y_i})+(1-y_i)ln(1+e^{y_i})$ </li>
+<li>红色方框所框起来的是正则项（包括L1正则、L2正则）</li>
+<li>红色圆圈所圈起来的为常数项</li>
+<li>对于$ f(x)$，xgboost利用泰勒展开三项，做一个近似</li>
+</ul>
+<p>我们对目标函数分析分析：</p>
+<ol>
+<li>目标函数的第一个求和项每一次预测函数与目标的残差之和，因此我们通过不断增加树来拟合目标，让目标函数的残差最低，而上面那个Obj的公式表达的可能有些过于抽象，我们可以考虑当是平方误差的情况，因此利用泰勒展开，不是二次的想办法近似为二次</li>
+</ol>
+<blockquote>
+<p>在数学中，泰勒公式（英语：Taylor’s Formula）是一个用函数在某点的信息描述其附近取值的公式。这个公式来自于微积分的泰勒定理（Taylor’s theorem），泰勒定理描述了一个可微函数，如果函数足够光滑的话，在已知函数在某一点的各阶导数值的情况之下，泰勒公式可以用这些导数值做系数构建一个多项式来近似函数在这一点的邻域中的值，这个多项式称为泰勒多项式（Taylor polynomial）。</p>
+</blockquote>
+<ol start="2">
+<li>通过$ \Omega(f_t)$的惩罚函数对生成树的深度进行限制，只有超过惩罚函数的子叶才能进行深度拓展，防止算法预测的过拟合；</li>
+</ol>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>简单梳理一下算法流程：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ZfSlVMWV92,size_16,color_FFFFFF,t_70.png" alt="img" loading="lazy"></p>
+<p>简单总结XGBoost算法的流程就是：贪心算法遍历每一个特征划分点 + 最优化（二次最优化）-关注每一次特征划分的增益率，取增益效果最优的划分。</p>
+<ol>
+<li>贪心算法：利用贪婪算法，遍历所有特征的所有特征划分点。</li>
+<li>二次最优化：“短视”，即是只看本次特征划分后的最优解，就是眼前利益最大化决定。</li>
+</ol>
+<p>总而言之，XGBoost使用了和CART回归树一样的想法，利用贪婪算法，遍历所有特征的所有特征划分点，不同的是使用的目标函数不一样。具体做法就是分裂后的目标函数值比单子叶子节点的目标函数的增益，同时为了限制树生长过深，还加了个阈值，只有当增益大于该阈值才进行分裂。</p>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><p><em>1.<a target="_blank" rel="noopener" href="https://blog.csdn.net/v_july_v/article/details/7577684">从决策树学习谈到贝叶斯分类算法、EM、HMM</a></em></p>
+<p><em>2. <a href="https://link.csdn.net/?target=https://arxiv.org/pdf/1603.02754v1.pdf">xgboost原始论文</a></em></p>
+<p><em>3. <a target="_blank" rel="noopener" href="https://github.com/NLP-LOVE/ML-NLP/blob/master/Machine%20Learning/3.Desition%20Tree/Desition%20Tree.md">Github NLP-LOVE/ML-NLP –Desition Tree</a></em></p>
+<p><em>4. <a target="_blank" rel="noopener" href="https://blog.csdn.net/v_JULY_v/article/details/81410574">通俗理解kaggle比赛大杀器xgboost</a></em></p>
+</div><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="Donate" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-hand-coin-line"></use></svg></span><div id="reward-comment">I sell my ass. Please give me money.</div><div id="qr" style="display:none;"><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/wC1GUz.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/wC1GUz.png" alt="支付宝" title="支付宝"></a><div><span style="color:#00A3EE"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-alipay-line"></use></svg></span></div></div><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/WwWxDH.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/WwWxDH.png" alt="微信支付" title="微信支付"></a><div><span style="color:#2DC100"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-wechat-pay-line"></use></svg></span></div></div></div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>Post author: </strong>Dash</li><li class="post-copyright-link"><strong>Post link: </strong><a href="https://dashi777.github.io/2022/01/24/the-relationship-about-RF-XGBoosts/" title="浅谈数据分析--从决策树谈到随机森林与XGBoost">https://dashi777.github.io/2022/01/24/the-relationship-about-RF-XGBoosts/</a></li><li class="post-copyright-license"><strong>Copyright Notice: </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><svg class="icon"><use xlink:href="#icon-creative-commons-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-by-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-nc-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-sa-line"></use></svg></a> unless otherwise stated.</li></ul></section></article><div class="post-nav"><div class="post-nav-item"></div><div class="post-nav-item"><a class="post-nav-next" href="/2022/01/11/how-to-distinguish-accuracy-precision/" rel="next" title="浅谈数据分析第二期--召回率、准确率傻傻分不清"><span class="post-nav-text">浅谈数据分析第二期--召回率、准确率傻傻分不清</span><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-right-s-line"></use></svg></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>要不要和我说些什么？</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2019 – 2022 </span><span class="with-love" id="animate"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-cloud-line"></use></svg></span><span class="author"> Dash</span></div><div class="powered"><span>Powered by <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> v5.4.0</span><span class="footer-separator">|</span><span>Theme - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.7.0</span></div><div class="live_time"><span>本博客已萌萌哒地运行</span><span id="display_live_time"></span><span class="moe-text">(●'◡'●)</span><script>function blog_live_time() {
+  setTimeout(blog_live_time, 1000);
+  const start = new Date('2021-12-23T00:00:00');
+  const now = new Date();
+  const timeDiff = (now.getTime() - start.getTime());
+  const msPerMinute = 60 * 1000;
+  const msPerHour = 60 * msPerMinute;
+  const msPerDay = 24 * msPerHour;
+  const passDay = Math.floor(timeDiff / msPerDay);
+  const passHour = Math.floor((timeDiff % msPerDay) / 60 / 60 / 1000);
+  const passMinute = Math.floor((timeDiff % msPerHour) / 60 / 1000);
+  const passSecond = Math.floor((timeDiff % msPerMinute) / 1000);
+  display_live_time.innerHTML = " " + passDay + " 天 " + passHour + " 小时 " + passMinute + " 分 " + passSecond + " 秒";
+}
+blog_live_time();
+</script></div></footer><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-up-s-line"></use></svg><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></div></body></html>
