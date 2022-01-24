@@ -5,7 +5,9 @@
 }
 document.addEventListener("DOMContentLoaded", initScrollReveal);
 document.addEventListener("pjax:success", initScrollReveal);
-</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/copy-tex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js"></script><script>document.addEventListener("DOMContentLoaded", () => {
+  Yun.utils.renderKatex();
+});</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
     const Yun = window.Yun || {};
     window.CONFIG = {"hostname":"dashi777.github.io","root":"/","title":["Dash 的","C0mm3nt","and","叨逼叨"],"version":"1.7.0","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}.","hits":"${hits} results found","hits_time":"${hits} results found in ${time} ms"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"data/sentences.json"}};
   </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/utils.js"></script><script src="/js/hexo-theme-yun.js"></script><meta name="description" content="引言我们今天来谈谈机器学习中使用次数比较多的算法模型–随机森林，还有机器学习中的大杀器–XGBoost，当然还有与XGBoost相关的梯度提升决策树（GBDT），这些算法模型都是基于决策树的整合和优化，因此我们从决策树算法说起，聊聊这几个机器学习绕不开的算法模型。 注意： 建模常有分类、聚类和回归的分类算法，随机森林和XGBoost都适用于分类和回归，因分类相对容易理解，因此本文以分类使用来讲解这">
@@ -22,7 +24,7 @@ document.addEventListener("pjax:success", initScrollReveal);
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/format,png-20220124153552561.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ZfSlVMWV92,size_16,color_FFFFFF,t_70.png">
 <meta property="article:published_time" content="2022-01-24T08:21:08.000Z">
-<meta property="article:modified_time" content="2022-01-24T08:50:49.482Z">
+<meta property="article:modified_time" content="2022-01-24T10:15:51.684Z">
 <meta property="article:author" content="Dash">
 <meta property="article:tag" content="数据分析">
 <meta name="twitter:card" content="summary">
